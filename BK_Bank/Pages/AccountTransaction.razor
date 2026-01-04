@@ -14,7 +14,74 @@ Displays success or error messages based on validation and transaction results.
 
 <PageTitle>Account transaction</PageTitle>
 
-<h3>AccountTransaction</h3>
+<h1>AccountTransaction</h1>
+
+<!-- Account transaction form -->
+
+@if (_accounts.Count <= 0)
+{
+    <p>No accounts available. Please create one under New Account.</p>
+}
+else
+{
+    <EditForm Model="_model" OnValidSubmit="OnSubmitAsync">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-row">
+            <label>From account</label>
+            <InputSelect @bind-Value="_model.FromAccountId">
+                <option value="">Select account</option>
+                @foreach (var account in _accounts)
+                {
+                    <option value="@account.Id.ToString()">@account.Name</option>
+                }
+            </InputSelect>
+        </div>
+
+        <div class="form-row">
+            <label>To account</label>
+            <InputSelect @bind-Value="_model.ToAccountId">
+                <option value="">Select account</option>
+                @foreach (var account in _accounts)
+                {
+                    <option value="@account.Id.ToString()">@account.Name</option>
+                }
+            </InputSelect>
+        </div>
+
+        <div class="form-row">
+            <label>Amount</label>
+            <InputNumber TValue="decimal" @bind-Value="_model.Amount""></InputNumber>
+        </div>
+
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <div class="alert alert-danger">
+                @_errorMessage
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(_successMessage))
+        {
+            <div class="alert alert-success">
+                @_successMessage
+            </div>
+        }
+
+        <button type="submit" class="btn-submit">Add</button>
+    </EditForm>
+}
+
+<h2>Account balances</h2>
+<ul>
+    @foreach (var account in _accounts)
+    {
+        <li>
+            <strong>@account.Name</strong>: @account.Balance SEK
+        </li>
+    }
+</ul>
 
 @code {
     private readonly TransferFormModel _model = new();
