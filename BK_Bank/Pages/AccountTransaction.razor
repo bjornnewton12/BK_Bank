@@ -1,0 +1,118 @@
+﻿@page "/accountTransaction"
+@using BK_Bank.Domain
+@using BK_Bank.Interfaces
+@using BK_Bank.Services
+@inject IAuthenticationService AuthenticationService
+@inject NavigationManager Navigation
+@inject IAccountService AccountService
+
+@* 
+Summary:
+Allows users to transfer funds between two existing accounts. 
+Displays success or error messages based on validation and transaction results.
+*@
+
+<PageTitle>Account transaction</PageTitle>
+
+<h3>AccountTransaction</h3>
+
+@code {
+    private readonly TransferFormModel _model = new();
+    private List<BankAccount> _accounts = new();
+    private List<BankAccount> _toAccounts = new();
+    private string? _errorMessage;
+    private string? _successMessage;
+
+    // Form model for transferring funds between accounts
+    private class TransferFormModel
+    {
+        public Guid FromAccountId { get; set; }
+        public Guid ToAccountId { get; set; }
+        public decimal Amount { get; set; }
+    }
+
+    // Check if page is authenticated and load all accounts on page initialization
+    protected override async Task OnInitializedAsync()
+    {
+        _accounts = await AccountService.GetAccounts();
+        _toAccounts = _accounts;
+    }
+
+    // Handle form submission for account transfers
+    private async Task OnSubmitAsync()
+    {
+        _errorMessage = null;
+        _successMessage = null;
+
+        if (_model.FromAccountId == Guid.Empty || _model.ToAccountId == Guid.Empty)
+        {
+            _errorMessage = "Please select accounts.";
+            StateHasChanged();
+            return;
+        }
+
+        if (_model.FromAccountId == _model.ToAccountId)
+        {
+            _errorMessage = "You cannot transfer to the same account.";
+            StateHasChanged();
+            return;
+        }
+
+        try
+        {
+            await AccountService.Transfer(_model.FromAccountId, _model.ToAccountId, _model.Amount);
+
+            // Update list
+            _accounts = await AccountService.GetAccounts();
+
+            _model.Amount = 0;
+            _errorMessage = null;
+
+            // Show confirmation
+            var from = _accounts.First(x => x.Id == _model.FromAccountId);
+            var to = _accounts.First(x => x.Id == _model.ToAccountId);
+
+            _model.Amount = 0;
+            _successMessage = "Transfer completed.";
+            StateHasChanged();
+        }
+        catch (ArgumentException ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        catch (InvalidOperationException ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        return;
+    }
+
+    // Handle account dropdown changes
+    private void HandleFormChanged(ChangeEventArgs eventArgs)
+    {
+        if (Guid.TryParse(eventArgs.Value?.ToString(), out var id))
+        {
+            OnFormChanged(id);
+        }
+    }
+
+    // Update "To account" list when a "From account" is selected
+    private void OnFormChanged(Guid fromId)
+    {
+        _model.FromAccountId = fromId;
+        var from = _accounts.FirstOrDefault(x => x.Id == fromId);
+        if (from != null)
+        {
+            _toAccounts = _accounts.Where(account => account.Id != fromId).ToList();
+        }
+        else
+        {
+            _accounts = _accounts.ToList();
+        }
+        _model.ToAccountId = Guid.Empty;
+    }
+}
