@@ -14,6 +14,72 @@ interest rate, and last updated date. Allows removal of accounts with zero balan
 
 <h1>Accounts</h1>
 
+@if (_accounts.Count == 0)
+{
+    <p>There are no accounts, create your first under New account.</p>
+}
+
+else
+{
+    <table class="accounts-table">
+        <thead>
+            <tr>
+                <th>
+                    <button class="btn-sort" @onclick="() => SetSort(SortKey.Name)">
+                        Name @(currentKey == SortKey.Name ? (descending ? "⯆" : "⯅") : "")
+                    </button>
+                </th>
+                <th>
+                    <button class="btn-sort" @onclick="() => SetSort(SortKey.AccountType)">
+                        Account type @(currentKey == SortKey.AccountType ? (descending ? "⯆" : "⯅") : "")
+                    </button>
+                </th>
+                <th>
+                    <button class="btn-sort" @onclick="() => SetSort(SortKey.Balance)">
+                        Balance @(currentKey == SortKey.Balance ? (descending ? "⯆" : "⯅") : "")
+                    </button>
+                </th>
+                <th>Interest rate</th>
+                <th>
+                    <button class="btn-sort" @onclick="() => SetSort(SortKey.AccumulatedInterest)">
+                        Accumulated interest @(currentKey == SortKey.AccumulatedInterest ? (descending ? "⯆" : "⯅") : "")
+                    </button>
+                </th>
+                <th>
+                    <button class="btn-sort" @onclick="() => SetSort(SortKey.LastUpdated)">
+                        Last updated @(currentKey == SortKey.LastUpdated ? (descending ? "⯆" : "⯅") : "")
+                    </button>
+                </th>
+                <th><!-- Potential remove button --></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var account in SortedAccounts())
+            {
+                <tr>
+                    <td>@account.Name</td>
+                    <td>@account.AccountType</td>
+                    <td>@account.Balance @account.CurrencyType</td>
+                    <td>
+                        @if (account.AccountType == AccountType.Savings)
+                        {
+                            @(BankAccount.InterestRate * 100)
+                        }
+                    </td>
+                    <td>@account.ApplyInterest().ToString() @account.CurrencyType</td>
+                    <td>@account.LastUpdated.ToLocalTime()</td>
+                    <td>
+                        @if (account.Balance == 0)
+                        {
+                            <button class="remove-btn" @onclick="() => RemoveAccount(account)">Remove</button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
 @code {
     private CreateAccountModel _model = new();
     private List<BankAccount> _accounts = new();
