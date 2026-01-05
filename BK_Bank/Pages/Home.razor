@@ -3,8 +3,114 @@
 @using BK_Bank.Domain
 @using BK_Bank.Services
 
+@*
+Summary:
+Home page with summary
+*@
+
 <PageTitle>Home</PageTitle>
 
 <h1>Hello, world!</h1>
 
 Welcome to your new app.
+
+<div class="home-page">
+    <div class="header">
+        <h1 class="hero-title">Welcome to BK Bank</h1>
+    </div>
+
+    <!-- Introduction -->
+    <div class="home-content">
+        <p>
+            We make banking simple, smart, and (dare we say) enjoyable. From tracking your spending
+            to growing your savings, BK Bank gives you all the tools you need — without the financial jargon
+            or the fine-print headaches.
+        </p>
+        <p>
+            Fast transfers, clear insights, and support that actually supports you.
+            Because your money should work for you — not the other way around.
+        </p>
+    
+
+    <!-- Login (Only available when logged out) -->
+    @if (!isLoggedIn)
+    {
+        <h2>Log in</h2>
+
+        @if (loginFailed)
+        {
+            <div class="alert alert-danger">
+                Invalid username or PIN.
+            </div>
+        }
+
+        <div class="login-row">
+            <label>Username</label>
+            <input @bind="username" />
+        </div>
+        <div class="login-row">
+            <label>PIN</label>
+            <input @bind="pin" />
+        </div>
+        <button type="submit" class="btn-submit" @onclick="LoginAsync">Log in</button>
+    }
+    </div>
+</div>
+
+@code
+{
+    private string username = "";
+    private string pin = "";
+    private bool isLoggedIn;
+    private bool loginFailed;
+    private User? currentUser;
+
+    // Check if page is authenticated, load user data if logged in, and subscribe to authentication state changes
+    protected override async Task OnInitializedAsync()
+    {
+        isLoggedIn = await AuthenticationService.IsLoggedInAsync();
+        if (isLoggedIn)
+        {
+            currentUser = await AuthenticationService.GetUserAsync();
+        }
+        AuthenticationService.OnAuthStateChanged += AuthStateChanged;
+    }
+
+    // Attempt to log in using provided username and PIN, and update authentication state based on result
+    private async Task LoginAsync()
+    {
+        loginFailed = false;
+
+        var success = await AuthenticationService.LoginAsync(username, pin);
+        if (success)
+        {
+            isLoggedIn = true;
+            currentUser = await AuthenticationService.GetUserAsync();
+        }
+        else
+        {
+            loginFailed = true;
+        }
+    }
+
+    // Update authentication and user state when login status changes
+    private async void AuthStateChanged()
+    {
+        isLoggedIn = await AuthenticationService.IsLoggedInAsync();
+        if (isLoggedIn)
+        {
+            currentUser = await AuthenticationService.GetUserAsync();
+        }
+        else
+        {
+            currentUser = null;
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    // Unsubscribe from authentication state change events when the component is disposed
+    public void Dispose()
+    {
+        AuthenticationService.OnAuthStateChanged -= AuthStateChanged;
+    }
+}
