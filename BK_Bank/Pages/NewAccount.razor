@@ -1,4 +1,4 @@
-﻿@page "/newaccount"
+﻿@page "/newAccount"
 @inject IAccountService AccountService
 @inject IAuthenticationService AuthenticationService
 @inject NavigationManager Navigation
@@ -10,7 +10,46 @@ Summary:
 Page for creating new bank accounts and displaying a list of existing accounts with their balances.
 *@
 
+<PageTitle>New account</PageTitle>
+
 <h1>New Account</h1>
+
+<!-- New account form -->
+<EditForm Model="_model" OnValidSubmit="CreateAccountAsync">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-row">
+        <label>Account name</label>
+        <InputText @bind-Value="_model.Name" />
+    </div>
+
+    <div class="form-row">
+        <InputSelect @bind-Value="_model.AccountType">
+            <option value="">Select account type</option>
+            <option value="@AccountType.Deposit">Deposit</option>
+            <option value="@AccountType.Savings">Savings</option>
+        </InputSelect>
+    </div>
+
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <div class="alert alert-danger">
+            @_errorMessage
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(_successMessage))
+    {
+        <div class="alert alert-success">
+            @_successMessage
+        </div>
+    }
+
+    <button type="submit" class="btn-submit">Create account</button>
+
+</EditForm>
+
 
 @code {
     private CreateAccountModel _model = new();
