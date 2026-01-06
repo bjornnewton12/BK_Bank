@@ -6,11 +6,9 @@
     /// </summary>
     public class User
     {
-        public string UserName { get; set; }
         public string Pin { get; set; }
-        public User(string userName, string pin)
+        public User(string pin)
         {
-            UserName = userName;
             Pin = pin;
         }
     }

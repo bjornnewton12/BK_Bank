@@ -1,4 +1,7 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@inject IAuthenticationService AuthenticationService
+@inject NavigationManager Navigation
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">BK_Bank</a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
@@ -14,41 +17,83 @@
                 <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
             </NavLink>
         </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="accounts">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Accounts
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="accountTransaction">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Account transactions
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="history">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> History
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="newAccount">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> New account
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="withdraw-deposit">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Withdraw & Deposit
-            </NavLink>
-        </div>
+
+
+        <!-- Only visible when logged in -->
+        @if (isLoggedIn)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="accounts">
+                    <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Accounts
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="accountTransaction">
+                    <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Account transactions
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="history">
+                    <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> History
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="newAccount">
+                    <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> New account
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="withdraw-deposit">
+                    <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Withdraw & Deposit
+                </NavLink>
+            </div>
+        }
     </nav>
 </div>
+        
 
 @code {
     private bool collapseNavMenu = true;
-
+    private bool showAccountsMenu = false;
+    private bool isLoggedIn;
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    // Check if user is logged in when the navigation menu initializes and subscribe to authentication changes
+    protected override async Task OnInitializedAsync()
+    {
+        isLoggedIn = await AuthenticationService.IsLoggedInAsync();
+        AuthenticationService.OnAuthStateChanged += AuthStateChanged;
+    }
+
+    // Log out user, update login state and redirect to Home
+    private async Task LogoutAsync()
+    {
+        await AuthenticationService.LogoutAsync();
+        isLoggedIn = false;
+        Navigation.NavigateTo("/");
+        StateHasChanged();
+    }
 
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
+    }
+
+    private void ToggleAccountsMenu()
+    {
+        showAccountsMenu = !showAccountsMenu;
+    }
+
+    // Update login state and refresh UI when authentication status changes
+    private async void AuthStateChanged()
+    {
+        isLoggedIn = await AuthenticationService.IsLoggedInAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    // Unsubscribe from authentication state change events when component is disposed
+    public void Dispose()
+    {
+        AuthenticationService.OnAuthStateChanged -= AuthStateChanged;
     }
 }

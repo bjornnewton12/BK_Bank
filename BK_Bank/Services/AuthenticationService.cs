@@ -9,7 +9,7 @@
         private readonly IStorageService _storageService;
         private string UserKey = "CurrentUser";
         private string LoggedInKey = "isLoggedIn";
-        private readonly User _defaultUser = new("arber", "27237");
+        private readonly User _defaultUser = new("27237");
         public event Action? OnAuthStateChanged;
 
         // Initialize the authentication service and log that it has started
@@ -20,14 +20,14 @@
         }
 
         // Attempt to log in using provided credentials and store user data if successful
-        public async Task<bool> LoginAsync(string userName, string pin)
+        public async Task<bool> LoginAsync(string pin)
         {
-            Console.WriteLine($"AuthenticationService INFO: Attempting login user '{userName}'.");
-            if (userName == _defaultUser.UserName && pin == _defaultUser.Pin)
+            Console.WriteLine($"AuthenticationService INFO: Attempting login user.");
+            if (pin == _defaultUser.Pin)
             {
                 await _storageService.SetItemAsync(UserKey, _defaultUser);
                 await _storageService.SetItemAsync(LoggedInKey, true);
-                Console.WriteLine($"AuthenticationService INFO: '{userName}' logged in successfully.");
+                Console.WriteLine($"AuthenticationService INFO: Logged in successfully.");
                 OnAuthStateChanged?.Invoke();
                 return true;
             }

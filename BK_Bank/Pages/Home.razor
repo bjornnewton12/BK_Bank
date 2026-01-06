@@ -45,10 +45,6 @@ Welcome to your new app.
         }
 
         <div class="login-row">
-            <label>Username</label>
-            <input @bind="username" />
-        </div>
-        <div class="login-row">
             <label>PIN</label>
             <input @bind="pin" />
         </div>
@@ -59,7 +55,6 @@ Welcome to your new app.
 
 @code
 {
-    private string username = "";
     private string pin = "";
     private bool isLoggedIn;
     private bool loginFailed;
@@ -81,7 +76,7 @@ Welcome to your new app.
     {
         loginFailed = false;
 
-        var success = await AuthenticationService.LoginAsync(username, pin);
+        var success = await AuthenticationService.LoginAsync(pin);
         if (success)
         {
             isLoggedIn = true;
