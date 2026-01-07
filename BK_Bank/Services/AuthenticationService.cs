@@ -6,54 +6,54 @@
     /// </summary>
     public class AuthenticationService : IAuthenticationService
     {
-        private readonly IStorageService _storageService;
-        private string UserKey = "CurrentUser";
-        private string LoggedInKey = "isLoggedIn";
+        private bool _isLoggedIn;
+        private User? _currentUser;
+
         private readonly User _defaultUser = new("27237");
+
         public event Action? OnAuthStateChanged;
 
         // Initialize the authentication service and log that it has started
-        public AuthenticationService(IStorageService storageService)
+        public AuthenticationService()
         {
-            _storageService = storageService;
             Console.WriteLine("AuthenticationService INFO: AuthenticationService initialized.");
         }
 
         // Attempt to log in using provided credentials and store user data if successful
-        public async Task<bool> LoginAsync(string pin)
+        public Task<bool> LoginAsync(string pin)
         {
             Console.WriteLine($"AuthenticationService INFO: Attempting login user.");
             if (pin == _defaultUser.Pin)
             {
-                await _storageService.SetItemAsync(UserKey, _defaultUser);
-                await _storageService.SetItemAsync(LoggedInKey, true);
-                Console.WriteLine($"AuthenticationService INFO: Logged in successfully.");
+                _isLoggedIn = true;
+                _currentUser = _defaultUser;
                 OnAuthStateChanged?.Invoke();
-                return true;
+                return Task.FromResult(true);
             }
             Console.WriteLine("AuthenticationService INFO: Login failed. Invalid username or PIN.");
-            return false;
+            return Task.FromResult(false);
         }
 
         // Log out the current user and clear stored authentication data
-        public async Task LogoutAsync()
+        public Task LogoutAsync()
         {
             Console.WriteLine("AuthenticationService INFO: Logging out user.");
-            await _storageService.SetItemAsync<User?>(UserKey, null);
-            await _storageService.SetItemAsync(LoggedInKey, false);
+            _isLoggedIn = false;
+            _currentUser = null;
             OnAuthStateChanged?.Invoke();
+            return Task.CompletedTask;
         }
 
         // Check if a user is currently logged in based on stored authentication state
-        public async Task<bool> IsLoggedInAsync()
+        public Task<bool> IsLoggedInAsync()
         {
-            return await _storageService.GetItemAsync<bool>(LoggedInKey);
+            return Task.FromResult(_isLoggedIn);
         }
 
         // Retrieve the currently logged-in user's data from storage
-        public async Task<User?> GetUserAsync()
+        public Task<User?> GetUserAsync()
         {
-            return await _storageService.GetItemAsync<User>(UserKey);
+            return Task.FromResult(_currentUser);
         }
     }
 }
