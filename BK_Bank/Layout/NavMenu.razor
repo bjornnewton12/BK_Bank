@@ -27,28 +27,9 @@
                 </NavLink>
             </div>
             <div class="nav-item px-3">
-                <button class="nav-link btn btn-toggle align-items-center"
-                        @onclick="ToggleAccountsMenu"
-                        style="background:none; border:none; color:white; text-align:left; width:100%;">
+                <NavLink class="nav-link" href="accounts">
                     <span class="bi bi-wallet" aria-hidden="true"></span> Accounts
-                    <span class="bi @(showAccountsMenu ? "bi-chevron-up" : "bi-chevron-down") float-end"></span>
-                </button>
-
-                <!-- Only visible when Accounts is clicked -->
-                @if (showAccountsMenu)
-                {
-                    <nav class="nav flex-column ms-4 sub-menu">
-                        <NavLink class="nav-link nav-link-sub" href="myAccounts">
-                            <span class="bi bi-person-lines-fill" aria-hidden="true"></span> My Accounts
-                        </NavLink>
-                        <NavLink class="nav-link nav-link-sub" href="accounts">
-                            <span class="bi bi-plus-circle" aria-hidden="true"></span> New Account
-                        </NavLink>
-                        <NavLink class="nav-link nav-link-sub" href="newTransaction">
-                            <span class="bi bi-repeat" aria-hidden="true"></span> Account transaction
-                        </NavLink>
-                    </nav>
-                }
+                </NavLink>
             </div>
 
             <div class="nav-item px-3">
@@ -57,12 +38,6 @@
                 </NavLink>
             </div>
         }
-
-        <div class="nav-item px-3">
-            <a class="nav-link" href="https://learn.microsoft.com/aspnet/core/" target="_blank" rel="noopener noreferrer">
-                <span class="bi bi-info-circle" aria-hidden="true"></span> About (External link)
-            </a>
-        </div>
 
         <div class="nav-item px-3">
             @if (isLoggedIn)
@@ -77,7 +52,6 @@
 
 @code {
     private bool collapseNavMenu = true;
-    private bool showAccountsMenu = false;
     private bool isLoggedIn;
 
     // Check if user is logged in when the navigation menu initializes and subscribe to authentication changes
@@ -101,11 +75,6 @@
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
-    }
-
-    private void ToggleAccountsMenu()
-    {
-        showAccountsMenu = !showAccountsMenu;
     }
 
     // Update login state and refresh UI when authentication status changes

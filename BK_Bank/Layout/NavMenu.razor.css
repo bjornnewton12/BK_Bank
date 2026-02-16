@@ -1,6 +1,14 @@
 .navbar-toggler {
-    background-color: rgba(50, 50, 150);
+    background-color: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    padding: 0.4rem 0.6rem;
+    transition: background-color 0.2s ease;
 }
+
+    .navbar-toggler:hover {
+        background-color: rgba(255, 255, 255, 0.25);
+    }
 
 .top-row {
     height: 3.5rem;
@@ -15,18 +23,19 @@
     display: inline-block;
     position: relative;
     width: 2rem;
-    margin-right: 1rem;
+    margin-right: 0.75rem;
     background-size: cover;
+    transition: transform 0.2s ease;
 }
 
 .nav-item {
     font-size: 0.9rem;
-    padding-bottom: 0.5rem;
+    padding-bottom: 0.25rem;
     align-items: center;
 }
 
     .nav-item .bi {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
     }
 
     .nav-item:first-of-type {
@@ -38,31 +47,40 @@
     }
 
     .nav-item ::deep a {
-        color: white;
-        border-radius: 4px;
-        height: 3rem;
+        color: rgba(255, 255, 255, 0.85);
+        border-radius: 8px;
+        height: 2.75rem;
         display: flex;
         align-items: center;
-        line-height: 3rem;
+        line-height: 2.75rem;
+        transition: all 0.2s ease;
+        font-weight: 500;
+        letter-spacing: 0.02em;
     }
 
         .nav-item ::deep a.active {
-            background-color: rgba(255, 255, 255, 0.37);
+            background-color: rgba(255, 255, 255, 0.2);
             color: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
         }
 
         .nav-item ::deep a:hover {
-            background-color: rgba(255,255,255,0.1);
+            background-color: rgba(255, 255, 255, 0.12);
             color: white;
+            transform: translateX(2px);
+        }
+
+        .nav-item ::deep a.active:hover {
+            background-color: rgba(255, 255, 255, 0.25);
         }
 
 .disabled {
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.4);
     cursor: not-allowed;
     text-decoration: none;
 }
 
-/* Sub-menu*/
+/* Sub-menu */
 .nav-link-sub {
     white-space: nowrap;
     overflow: hidden;
@@ -72,9 +90,29 @@
     padding-bottom: 4px;
     display: flex;
     align-items: center;
-    color: white;
+    color: rgba(255, 255, 255, 0.8);
     text-decoration: none;
+    transition: color 0.2s ease;
 }
+
+    .nav-link-sub:hover {
+        color: white;
+    }
+
+.nav .sub-menu .nav-link.nav-link-sub {
+    font-size: 0.85rem;
+    padding: 0.3rem 0.75rem;
+    text-decoration: none;
+    line-height: 1.2;
+    display: block;
+    border-left: 2px solid rgba(255, 255, 255, 0.25);
+    margin-left: 0.25rem;
+    transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+    .nav .sub-menu .nav-link.nav-link-sub:hover {
+        border-left-color: rgba(255, 255, 255, 0.7);
+    }
 
 @media (min-width: 641px) {
     .navbar-toggler {
@@ -91,14 +129,6 @@
         height: calc(100vh - 3.5rem);
         overflow-y: auto;
     }
-}
-
-.nav .sub-menu .nav-link.nav-link-sub {
-    font-size: 1rem;
-    padding: 0.25rem 0.75rem;
-    text-decoration: underline;
-    line-height: 1.2;
-    display: block;
 }
 
 div.top-row.navbar.navbar-dark {
