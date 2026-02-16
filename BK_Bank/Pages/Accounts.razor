@@ -1,22 +1,118 @@
 ﻿@page "/accounts"
+@using BK_Bank.Domain
+@using BK_Bank.Interfaces
+@using BK_Bank.Services
 @inject IAccountService AccountService
 @inject IAuthenticationService AuthenticationService
 @inject NavigationManager Navigation
-@using BK_Bank.Domain
 
 @* 
 Summary:
-Displays all of the user's bank accounts with details such as type, balance, 
-interest rate, and last updated date. Allows removal of accounts with zero balance.
+Displays all of the user's bank accounts with details such as type, balance, and last updated date. Allows removal of accounts with zero balance.
 *@
 
 <PageTitle>Accounts</PageTitle>
 
-<h1>Accounts</h1>
+<!-- Account transaction form -->
+<h2>AccountTransaction</h2>
+
+@if (_accounts.Count <= 0)
+{
+    <p>No accounts available. Please create one under New Account.</p>
+}
+else
+{
+    <EditForm Model="_transferModel" OnValidSubmit="OnSubmitAsync">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-row">
+            <label>From account</label>
+            <InputSelect TValue="Guid"
+                            Value="_transferModel.FromAccountId"
+                            ValueChanged="OnFormChanged"
+                            ValueExpression="@(() => _transferModel.FromAccountId)">
+                <option value="@Guid.Empty">Select account</option>
+                @foreach (var account in _accounts)
+                {
+                    <option value="@account.Id">@account.Name</option>
+                }
+            </InputSelect>
+        </div>
+
+        <div class="form-row">
+            <label>To account</label>
+            <InputSelect TValue="Guid" @bind-Value="_transferModel.ToAccountId">
+                <option value="@Guid.Empty">Select account</option>
+                @foreach (var account in _toAccounts)
+                {
+                    <option value="@account.Id">@account.Name</option>
+                }
+            </InputSelect>
+        </div>
+
+        <div class="form-row">
+            <label>Amount</label>
+            <InputNumber TValue="decimal" @bind-Value="_transferModel.Amount"></InputNumber>
+        </div>
+
+        @if (!string.IsNullOrEmpty(_transferErrorMessage))
+        {
+            <div class="alert alert-danger">
+                @_transferErrorMessage
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(_transferSuccessMessage))
+        {
+            <div class="alert alert-success">
+                @_transferSuccessMessage
+            </div>
+        }
+
+        <button type="submit" class="btn-submit">Transfer</button>
+    </EditForm>
+}
+
+<!--New account-->
+<h2>New account</h2>
+
+<EditForm Model="_createModel" OnValidSubmit="CreateAccountAsync">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-row">
+        <label>Account name</label>
+        <InputText @bind-Value="_createModel.Name" />
+    </div>
+
+    <div class="form-row">
+        <label>Account type</label>
+        <InputSelect @bind-Value="_createModel.AccountType">
+            <option value="@AccountType.Deposit">Deposit</option>
+            <option value="@AccountType.Savings">Savings</option>
+        </InputSelect>
+    </div>
+
+    @if (!string.IsNullOrEmpty(_createErrorMessage))
+    {
+        <div class="alert alert-danger">@_createErrorMessage</div>
+    }
+
+    @if (!string.IsNullOrEmpty(_createSuccessMessage))
+    {
+        <div class="alert alert-success">@_createSuccessMessage</div>
+    }
+
+    <button type="submit" class="btn-submit">Create account</button>
+</EditForm>
+
+<!--My accounts-->
+<h2>Accounts</h2>
 
 @if (_accounts.Count == 0)
 {
-    <p>There are no accounts, create your first under New account.</p>
+    <p>There are no accounts, create your first.</p>
 }
 
 else
@@ -81,9 +177,16 @@ else
 }
 
 @code {
-    private CreateAccountModel _model = new();
+    private CreateAccountModel _createModel = new();
     private List<BankAccount> _accounts = new();
+    private List<BankAccount> _toAccounts = new();
+    private TransferFormModel _transferModel = new();
+    private string? _transferErrorMessage;
+    private string? _transferSuccessMessage;
+    private string? _createErrorMessage;
+    private string? _createSuccessMessage;
 
+    // My accounts
     // Start value
     private SortKey currentKey = SortKey.Name;
     private bool descending = false;
@@ -102,32 +205,62 @@ else
     protected override async Task OnInitializedAsync()
     {
         _accounts = await AccountService.GetAccounts();
+        _toAccounts = _accounts.ToList();
     }
+
+
 
     // Create a new account and refresh the list
     private async Task CreateAccountAsync()
     {
+        _createErrorMessage = null;
+        _createSuccessMessage = null;
+
+        if (string.IsNullOrWhiteSpace(_createModel.Name))
+        {
+            _createErrorMessage = "Please enter an account name.";
+            return;
+        }
+
         try
         {
             await AccountService.CreateAccount(
-            _model.Name!,
-            _model.AccountType,
-            _model.InitialBalance);
+                _createModel.Name!,
+                _createModel.AccountType,
+                _createModel.InitialBalance);
 
+            // Refresh accounts
             _accounts = await AccountService.GetAccounts();
-            _model.Clear();
+
+            // Keep transfer dropdown in sync
+            _toAccounts = _transferModel.FromAccountId == Guid.Empty
+                ? _accounts.ToList()
+                : _accounts.Where(a => a.Id != _transferModel.FromAccountId).ToList();
+
+            _createModel.Clear();
+            _createSuccessMessage = "Account successfully created.";
         }
-        catch (Exception exception)
+        catch (Exception ex)
         {
-            Console.WriteLine(exception);
+            _createErrorMessage = ex.Message; // or a nicer message
         }
     }
+
 
     // Remove an account
     private async Task RemoveAccount(IBankAccount account)
     {
         await AccountService.DeleteAccount(account);
         _accounts = await AccountService.GetAccounts();
+        _toAccounts = _accounts.Where(a => a.Id != _transferModel.FromAccountId).ToList();
+
+        // Protect against selecting a deleted account
+        if (!_accounts.Any(a => a.Id == _transferModel.FromAccountId))
+        {
+            _transferModel.FromAccountId = Guid.Empty;
+            _transferModel.ToAccountId = Guid.Empty;
+            _toAccounts = _accounts.ToList();
+        }
         Console.WriteLine("MyAccounts INFO: Removed account");
     }
 
@@ -167,17 +300,99 @@ else
 
         sortedList = currentKey switch
         {
-            SortKey.Name => (descending ? sortedList.OrderByDescending(t => t.Name)
-            : sortedList.OrderBy(t => t.Name)),
-            SortKey.Balance => (descending ? sortedList.OrderByDescending(t => t.Balance)
-            : sortedList.OrderBy(t => t.Balance)),
-            SortKey.AccumulatedInterest => (descending ? sortedList.OrderByDescending(t => t.ApplyInterest())
-            : sortedList.OrderBy(t => t.ApplyInterest())),
-            SortKey.LastUpdated => (descending ? sortedList.OrderByDescending(t => t.LastUpdated)
-            : sortedList.OrderBy(t => t.LastUpdated)),
-
+            SortKey.Name => (descending ? sortedList.OrderByDescending(t => t.Name) : sortedList.OrderBy(t => t.Name)),
+            SortKey.AccountType => (descending ? sortedList.OrderByDescending(t => t.AccountType) : sortedList.OrderBy(t => t.AccountType)),
+            SortKey.Balance => (descending ? sortedList.OrderByDescending(t => t.Balance) : sortedList.OrderBy(t => t.Balance)),
+            SortKey.AccumulatedInterest => (descending ? sortedList.OrderByDescending(t => t.ApplyInterest()) : sortedList.OrderBy(t => t.ApplyInterest())),
+            SortKey.LastUpdated => (descending ? sortedList.OrderByDescending(t => t.LastUpdated) : sortedList.OrderBy(t => t.LastUpdated)),
             _ => sortedList
         };
+
         return sortedList;
+    }
+    // Account Transaction
+    // Form model for transferring funds between accounts
+    private class TransferFormModel
+    {
+        public Guid FromAccountId { get; set; }
+        public Guid ToAccountId { get; set; }
+        public decimal Amount { get; set; }
+    }
+
+    // Check if page is authenticated and load all accounts on page initialization
+
+    // Handle form submission for account transfers
+    private async Task OnSubmitAsync()
+    {
+        _transferErrorMessage = null;
+        _transferSuccessMessage = null;
+
+        if (_transferModel.Amount <= 0)
+        {
+            _transferErrorMessage = "Amount must be greater than 0.";
+            return;
+        }
+
+        if (_transferModel.FromAccountId == Guid.Empty || _transferModel.ToAccountId == Guid.Empty)
+        {
+            _transferErrorMessage = "Please select accounts.";
+            return;
+        }
+
+        if (_transferModel.FromAccountId == _transferModel.ToAccountId)
+        {
+            _transferErrorMessage = "You cannot transfer to the same account.";
+            return;
+        }
+
+        try
+        {
+            await AccountService.Transfer(_transferModel.FromAccountId, _transferModel.ToAccountId, _transferModel.Amount);
+
+            // Update list
+            _accounts = await AccountService.GetAccounts();
+
+            _toAccounts = _transferModel.FromAccountId == Guid.Empty
+                ? _accounts.ToList()
+                : _accounts.Where(a => a.Id != _transferModel.FromAccountId).ToList();
+
+            _transferModel.Amount = 0;
+            _transferErrorMessage = null;
+
+            // Show confirmation
+            var from = _accounts.First(x => x.Id == _transferModel.FromAccountId);
+            var to = _accounts.First(x => x.Id == _transferModel.ToAccountId);
+
+            _transferSuccessMessage = "Transfer completed.";
+        }
+        catch (ArgumentException ex)
+        {
+            _transferErrorMessage = ex.Message;
+        }
+        catch (InvalidOperationException ex)
+        {
+            _transferErrorMessage = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        return;
+    }
+
+    // Update "To account" list when a "From account" is selected
+    private void OnFormChanged(Guid fromId)
+    {
+        _transferModel.FromAccountId = fromId;
+        var from = _accounts.FirstOrDefault(x => x.Id == fromId);
+        if (from != null)
+        {
+            _toAccounts = _accounts.Where(account => account.Id != fromId).ToList();
+        }
+        else
+        {
+            _toAccounts = _accounts.ToList();
+        }
+        _transferModel.ToAccountId = Guid.Empty;
     }
 }
