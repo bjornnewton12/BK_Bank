@@ -13,113 +13,119 @@ Displays transaction history with sorting and filtering options (by date range, 
 
 <PageTitle>History</PageTitle>
 
-<h1>History</h1>
-
-<!-- History table -->
 @if (_accounts == null)
 {
     <p>Loading accounts</p>
 }
-
 else if (_accounts.Count == 0)
 {
     <p>No accounts</p>
 }
-
 else
 {
-    <div class="form-row">
-        <label>Select Account</label>
-        <InputSelect TValue="Guid" class="form-select" id="accountSelect"
-                     @bind-Value="SelectedAccountId">
-            @foreach (var account in _accounts)
-            {
-                <option value="@account.Id">@account.Name, Balance: @account.Balance @account.CurrencyType</option>
-            }
-        </InputSelect>
-    </div>
-    <div class="form-row">
-        <div class="col">
-            <label>From date</label>
-            <InputDate class="form-control" @bind-Value="filterFromDate" />
-        </div>
-        <div class="col">
-            <label>To date</label>
-            <InputDate class="form-control" @bind-Value="filterToDate" />
-        </div>
-        <div class="col">
-            <label>Transaction type</label>
-            <InputSelect class="form-select" @bind-Value="filterTransactionType">
-                <option value="">All</option>
-                @foreach (TransactionType type in Enum.GetValues(typeof(TransactionType)))
-                {
-                    <option value="@type">@type</option>
-                }
-            </InputSelect>
-        </div>
-    </div>
+    <div class="panel-layout">
 
-    @if (_selectedAccount == null || _selectedAccount.Transactions == null || !_selectedAccount.Transactions.Any())
-    {
-        <p>No transactions</p>
-    }
-    <!-- Sort table -->
-    else
-    {
-        <table class="accounts-table">
-            <thead>
-                <tr>
-                    <th>
-                        <button class="btn-sort" @onclick="() => SetSort(SortKey.Date)">
-                            Date @(currentKey == SortKey.Date ? (descending ? "⯆" : "⯅") : "")
-                        </button>
-                    </th>
-                    <th>
-                        <button class="btn-sort" @onclick="() => SetSort(SortKey.Amount)">
-                            Amount @(currentKey == SortKey.Amount ? (descending ? "⯆" : "⯅") : "")
-                        </button>
-                    </th>
-                    <th>
-                        <button class="btn-sort" @onclick="() => SetSort(SortKey.Type)">
-                            Transaction type @(currentKey == SortKey.Type ? (descending ? "⯆" : "⯅") : "")
-                        </button>
-                    </th>
-                    <th>
-                        <button class="btn-sort" @onclick="() => SetSort(SortKey.BalanceAfterTransaction)">
-                            Balance @(currentKey == SortKey.BalanceAfterTransaction ? (descending ? "⯆" : "⯅") : "")
-                        </button>
-                    </th>
-                    <th>From ⭢ To</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var transaction in sortedTransaction())
-                {
-                    <tr>
-                        <td>@transaction.DateTime.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
-                        <td>@transaction.Amount @transaction.CurrencyType</td>
-                        <td>
-                            @if (transaction.Type == TransactionType.Withdraw)
-                            {
-                                <span>@transaction.Type: @transaction.Category</span>
-                            }
-                            else
-                            {
-                                @transaction.Type
-                            }
-                        </td>
-                        <td>@transaction.BalanceAfterTransaction @transaction.CurrencyType</td>
-                        <td>
-                            @if (transaction.FromAccount.HasValue || transaction.ToAccount.HasValue)
-                            {
-                                <span>@(transaction.FromAccount!.Value.ToString()[..6]) ⭢ @(transaction.ToAccount!.Value.ToString()[..6])</span>
-                            }
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
+        <!-- Filters -->
+        <div class="form-column">
+            <h2>History</h2>
+
+            <div class="form-row">
+                <label>Select account</label>
+                <InputSelect TValue="Guid" @bind-Value="SelectedAccountId">
+                    @foreach (var account in _accounts)
+                    {
+                        <option value="@account.Id">@account.Name, Balance: @account.Balance @account.CurrencyType</option>
+                    }
+                </InputSelect>
+            </div>
+
+            <div class="form-row">
+                <label>From date</label>
+                <InputDate @bind-Value="filterFromDate" />
+            </div>
+
+            <div class="form-row">
+                <label>To date</label>
+                <InputDate @bind-Value="filterToDate" />
+            </div>
+
+            <div class="form-row">
+                <label>Transaction type</label>
+                <InputSelect @bind-Value="filterTransactionType">
+                    <option value="">All</option>
+                    @foreach (TransactionType type in Enum.GetValues(typeof(TransactionType)))
+                    {
+                        <option value="@type">@type</option>
+                    }
+                </InputSelect>
+            </div>
+        </div>
+
+        <!-- Transaction table -->
+        <div class="panel-main">
+            @if (_selectedAccount == null || _selectedAccount.Transactions == null || !_selectedAccount.Transactions.Any())
+            {
+                <p>No transactions</p>
+            }
+            else
+            {
+                <table class="accounts-table">
+                    <thead>
+                        <tr>
+                            <th>
+                                <button class="btn-sort" @onclick="() => SetSort(SortKey.Date)">
+                                    Date @(currentKey == SortKey.Date ? (descending ? "⯆" : "⯅") : "")
+                                </button>
+                            </th>
+                            <th>
+                                <button class="btn-sort" @onclick="() => SetSort(SortKey.Amount)">
+                                    Amount @(currentKey == SortKey.Amount ? (descending ? "⯆" : "⯅") : "")
+                                </button>
+                            </th>
+                            <th>
+                                <button class="btn-sort" @onclick="() => SetSort(SortKey.Type)">
+                                    Transaction type @(currentKey == SortKey.Type ? (descending ? "⯆" : "⯅") : "")
+                                </button>
+                            </th>
+                            <th>
+                                <button class="btn-sort" @onclick="() => SetSort(SortKey.BalanceAfterTransaction)">
+                                    Balance @(currentKey == SortKey.BalanceAfterTransaction ? (descending ? "⯆" : "⯅") : "")
+                                </button>
+                            </th>
+                            <th>From ⭢ To</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var transaction in sortedTransaction())
+                        {
+                            <tr>
+                                <td>@transaction.DateTime.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>@transaction.Amount @transaction.CurrencyType</td>
+                                <td>
+                                    @if (transaction.Type == TransactionType.Withdraw)
+                                    {
+                                        <span>@transaction.Type: @transaction.Category</span>
+                                    }
+                                    else
+                                    {
+                                        @transaction.Type
+                                    }
+                                </td>
+                                <td>@transaction.BalanceAfterTransaction @transaction.CurrencyType</td>
+                                <td>
+                                    @if (transaction.FromAccount.HasValue || transaction.ToAccount.HasValue)
+                                    {
+                                        <span>@(transaction.FromAccount!.Value.ToString()[..6]) ⭢ @(transaction.ToAccount!.Value.ToString()[..6])</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+
+    </div>
 }
 
 @code {

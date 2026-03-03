@@ -25,7 +25,10 @@ a, .btn-link {
 }
 
 .content {
-    padding-top: 1.1rem;
+    padding-top: 2.5rem;
+    padding-bottom: 8rem;
+    max-width: 1100px;
+    margin: 0 auto;
 }
 
 .valid.modified:not([type=checkbox]) {
@@ -109,23 +112,27 @@ code {
 /* Jag har lagt till */
 /* Forms */
 .form-row {
-    margin-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
 }
 
     .form-row input {
-        background-color: rgba(255, 255, 255, 0.5);
-        border: none;
-        height: 2.2rem;
-        padding: 0.3rem 0.3rem 0.3rem 0.5rem;
+        background-color: white;
+        border: 1.5px solid #333;
+        border-radius: 4px;
+        height: 2.4rem;
+        padding: 0.3rem 0.5rem;
         width: 300px;
+        font-size: 0.95rem;
     }
 
     .form-row select {
-        background-color: rgba(255, 255, 255, 0.5);
-        border: none;
-        height: 2.2rem;
-        padding: 0.3rem 0.3rem 0.3rem 0.5rem;
+        background-color: white;
+        border: 1.5px solid #333;
+        border-radius: 4px;
+        height: 2.4rem;
+        padding: 0.3rem 0.5rem;
         width: 300px;
+        font-size: 0.95rem;
     }
 
     .form-row label {
@@ -164,9 +171,9 @@ code {
     .form-container {
         display: flex;
         flex-direction: row;
-        justify-content: flex-start;
+        justify-content: center;
         align-items: flex-start;
-        gap: 0.5rem;
+        gap: 4rem;
     }
 
     .form-column {
@@ -177,19 +184,20 @@ code {
 
 /* Knappar */
 .btn-submit {
-    background-color: #306D66;
-    color: white;
+    background-color: #b8e6d4;
+    color: #1a1a1a;
     border: none;
     border-radius: 6px;
     padding: 0.5rem 1.5rem;
     font-size: 1rem;
+    font-weight: 500;
     cursor: pointer;
     margin-top: 0.5rem;
     margin-bottom: 2rem;
 }
 
     .btn-submit:hover {
-        background-color: black;
+        background-color: #8fd4bc;
     }
 
 .remove-btn {
@@ -208,31 +216,56 @@ code {
 
 /* Sort */
 .btn-sort {
-    background-color: #abdfd0;
+    background-color: transparent;
     border: none;
     font-weight: 600;
-    font-size: 0.9rem;
-    padding-left: calc(var(--original-padding-left, 0px) - 6px);
+    font-size: 0.95rem;
+    padding: 0;
+    cursor: pointer;
 }
 
 
 /* Table */
+.section-centered {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.panel-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+@media (min-width: 950px) {
+    .panel-layout {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 4rem;
+    }
+
+    .panel-main {
+        flex: 1;
+        min-width: 0;
+    }
+}
+
 .accounts-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 1rem;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
 }
 
     .accounts-table th, .accounts-table td {
         text-align: left;
-        padding: 8px 12px;
-        border-radius: 4px;
+        padding: 10px 16px;
     }
 
     .accounts-table th {
         font-weight: 600;
         text-align: left;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.15);
     }
 
     .accounts-table tr {
@@ -240,7 +273,7 @@ code {
     }
 
     .accounts-table tbody tr {
-        height: 50px;
+        height: 44px;
     }
 
         .accounts-table tbody tr:hover {
@@ -278,8 +311,8 @@ h1 {
 
 h2 {
     font-family: Arial, Helvetica, sans-serif;
-    font-weight: 600;
-    font-size: 200%;
+    font-weight: 700;
+    font-size: 1.5rem;
     letter-spacing: -0.01em;
     margin-bottom: 1rem;
 }
