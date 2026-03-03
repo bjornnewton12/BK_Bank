@@ -13,102 +13,110 @@ Displays all of the user's bank accounts with details such as type, balance, and
 
 <PageTitle>Accounts</PageTitle>
 
-<!-- Account transaction form -->
-<h2>AccountTransaction</h2>
-
 @if (_accounts.Count <= 0)
 {
     <p>No accounts available. Please create one under New Account.</p>
 }
 else
 {
-    <EditForm Model="_transferModel" OnValidSubmit="OnSubmitAsync">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+    <div class="form-container">
 
-        <div class="form-row">
-            <label>From account</label>
-            <InputSelect TValue="Guid"
-                            Value="_transferModel.FromAccountId"
-                            ValueChanged="OnFormChanged"
-                            ValueExpression="@(() => _transferModel.FromAccountId)">
-                <option value="@Guid.Empty">Select account</option>
-                @foreach (var account in _accounts)
+        <!--New account-->
+        <div class="form-column">
+            <h2>New account</h2>
+
+            <EditForm Model="_createModel" OnValidSubmit="CreateAccountAsync">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="form-row">
+                    <label>Account name</label>
+                    <InputText @bind-Value="_createModel.Name" />
+                </div>
+
+                <div class="form-row">
+                    <label>Account type</label>
+                    <InputSelect @bind-Value="_createModel.AccountType">
+                        <option value="@AccountType.Deposit">Deposit</option>
+                        <option value="@AccountType.Savings">Savings</option>
+                    </InputSelect>
+                </div>
+
+                @if (!string.IsNullOrEmpty(_createErrorMessage))
                 {
-                    <option value="@account.Id">@account.Name</option>
+                    <div class="alert alert-danger">@_createErrorMessage</div>
                 }
-            </InputSelect>
-        </div>
 
-        <div class="form-row">
-            <label>To account</label>
-            <InputSelect TValue="Guid" @bind-Value="_transferModel.ToAccountId">
-                <option value="@Guid.Empty">Select account</option>
-                @foreach (var account in _toAccounts)
+                @if (!string.IsNullOrEmpty(_createSuccessMessage))
                 {
-                    <option value="@account.Id">@account.Name</option>
+                    <div class="alert alert-success">@_createSuccessMessage</div>
                 }
-            </InputSelect>
+
+                <button type="submit" class="btn-submit">Create account</button>
+            </EditForm>
         </div>
 
-        <div class="form-row">
-            <label>Amount</label>
-            <InputNumber TValue="decimal" @bind-Value="_transferModel.Amount"></InputNumber>
+        <!--Account transaction-->
+        <div class="form-column">
+            <h2>Account transaction</h2>
+
+            <EditForm Model="_transferModel" OnValidSubmit="OnSubmitAsync">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="form-row">
+                    <label>From account</label>
+                    <InputSelect TValue="Guid"
+                                    Value="_transferModel.FromAccountId"
+                                    ValueChanged="OnFormChanged"
+                                    ValueExpression="@(() => _transferModel.FromAccountId)">
+                        <option value="@Guid.Empty">Select account</option>
+                        @foreach (var account in _accounts)
+                        {
+                            <option value="@account.Id">@account.Name</option>
+                        }
+                    </InputSelect>
+                </div>
+
+                <div class="form-row">
+                    <label>To account</label>
+                    <InputSelect TValue="Guid" @bind-Value="_transferModel.ToAccountId">
+                        <option value="@Guid.Empty">Select account</option>
+                        @foreach (var account in _toAccounts)
+                        {
+                            <option value="@account.Id">@account.Name</option>
+                        }
+                    </InputSelect>
+                </div>
+
+                <div class="form-row">
+                    <label>Amount</label>
+                    <InputNumber TValue="decimal" @bind-Value="_transferModel.Amount"></InputNumber>
+                </div>
+
+                @if (!string.IsNullOrEmpty(_transferErrorMessage))
+                {
+                    <div class="alert alert-danger">
+                        @_transferErrorMessage
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(_transferSuccessMessage))
+                {
+                    <div class="alert alert-success">
+                        @_transferSuccessMessage
+                    </div>
+                }
+
+                <button type="submit" class="btn-submit">Transfer</button>
+            </EditForm>
         </div>
-
-        @if (!string.IsNullOrEmpty(_transferErrorMessage))
-        {
-            <div class="alert alert-danger">
-                @_transferErrorMessage
-            </div>
-        }
-
-        @if (!string.IsNullOrEmpty(_transferSuccessMessage))
-        {
-            <div class="alert alert-success">
-                @_transferSuccessMessage
-            </div>
-        }
-
-        <button type="submit" class="btn-submit">Transfer</button>
-    </EditForm>
+    </div>
 }
 
-<!--New account-->
-<h2>New account</h2>
-
-<EditForm Model="_createModel" OnValidSubmit="CreateAccountAsync">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-
-    <div class="form-row">
-        <label>Account name</label>
-        <InputText @bind-Value="_createModel.Name" />
-    </div>
-
-    <div class="form-row">
-        <label>Account type</label>
-        <InputSelect @bind-Value="_createModel.AccountType">
-            <option value="@AccountType.Deposit">Deposit</option>
-            <option value="@AccountType.Savings">Savings</option>
-        </InputSelect>
-    </div>
-
-    @if (!string.IsNullOrEmpty(_createErrorMessage))
-    {
-        <div class="alert alert-danger">@_createErrorMessage</div>
-    }
-
-    @if (!string.IsNullOrEmpty(_createSuccessMessage))
-    {
-        <div class="alert alert-success">@_createSuccessMessage</div>
-    }
-
-    <button type="submit" class="btn-submit">Create account</button>
-</EditForm>
-
 <!--My accounts-->
-<h2>Accounts</h2>
+<div class="section-centered">
+<h2>My accounts</h2>
 
 @if (_accounts.Count == 0)
 {
@@ -175,6 +183,7 @@ else
         </tbody>
     </table>
 }
+</div>
 
 @code {
     private CreateAccountModel _createModel = new();

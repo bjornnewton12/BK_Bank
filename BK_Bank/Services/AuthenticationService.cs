@@ -9,7 +9,7 @@
         private bool _isLoggedIn;
         private User? _currentUser;
 
-        private readonly User _defaultUser = new("27237");
+        private readonly User _defaultUser = new("admin", "27237");
 
         public event Action? OnAuthStateChanged;
 
@@ -20,10 +20,10 @@
         }
 
         // Attempt to log in using provided credentials and store user data if successful
-        public Task<bool> LoginAsync(string pin)
+        public Task<bool> LoginAsync(string username, string pin)
         {
             Console.WriteLine($"AuthenticationService INFO: Attempting login user.");
-            if (pin == _defaultUser.Pin)
+            if (username == _defaultUser.Username && pin == _defaultUser.Pin)
             {
                 _isLoggedIn = true;
                 _currentUser = _defaultUser;
