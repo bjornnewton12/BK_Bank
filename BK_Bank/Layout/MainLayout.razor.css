@@ -19,3 +19,22 @@ main {
     z-index: 1000;
     box-sizing: border-box;
 }
+
+/* Background blurs */
+.bg-blur {
+    position: fixed;
+    top: 0;
+    width: auto;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 0;
+    user-select: none;
+}
+
+.bg-blur-left {
+    left: 0;
+}
+
+.bg-blur-right {
+    right: 0;
+}
