@@ -109,6 +109,30 @@ code {
     color: #c02d76;
 }
 
+/* Background blurs */
+.bg-blur {
+    position: fixed;
+    top: 0;
+    width: auto;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 0;
+    user-select: none;
+}
+
+.bg-blur-left {
+    left: 0;
+}
+
+.bg-blur-right {
+    right: 0;
+}
+
+.top-navbar, main {
+    position: relative;
+    z-index: 1;
+}
+
 /* Jag har lagt till */
 /* Forms */
 .form-row {
@@ -184,8 +208,8 @@ code {
 
 /* Knappar */
 .btn-submit {
-    background-color: #b8e6d4;
-    color: #1a1a1a;
+    background-color: #4100f4;
+    color: #fff;
     border: none;
     border-radius: 6px;
     padding: 0.5rem 1.5rem;
@@ -197,7 +221,7 @@ code {
 }
 
     .btn-submit:hover {
-        background-color: #8fd4bc;
+        background-color: #FF60F4;
     }
 
 .remove-btn {
@@ -350,6 +374,22 @@ h2 {
     color: black;
     width: 300px;
     border: none;
+}
+
+/* Navbar link states */
+a.topnav-link.active {
+    background-color: #4100f4 !important;
+    color: white !important;
+}
+
+a.topnav-link:hover {
+    background-color: #FF60F4 !important;
+    color: white !important;
+}
+
+a.topnav-link.active .bi,
+a.topnav-link:hover .bi {
+    color: white !important;
 }
 
 /* Sub-menu*/
